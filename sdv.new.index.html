@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Federal Budget Simulator :: Stardew Valley Edition ::</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Stardew Valley Inspired Palette */
+            --bg-page-start: #A0D9EF; /* Light Sky Blue (Day Sky) */
+            --bg-page-end: #F0E68C; /* Khaki (Ground/Sunet) */
+            
+            --text-primary: #4A3B31; /* Dark Brown (Almost Black Coffee) */
+            --text-secondary: #785C4D; /* Medium Brown (Dirt Brown) */
+            --text-on-dark-bg: #FFF8DC; /* Cornsilk (for text on dark buttons/elements) */
+
+            --accent-green: #556B2F; /* Dark Olive Green (Trees, UI Accent) */
+            --accent-blue: #4682B4; /* Steel Blue (Water, UI Accent) */
+            --accent-red: #CD5C5C; /* Indian Red (Warnings, UI Accent) */
+            --accent-yellow: #DAA520; /* Goldenrod (Highlights, UI Accent) */
+            --accent-orange: #D2691E; /* Chocolate (UI Accent) */
+
+            --card-bg: #F5DEB3; /* Wheat (Wooden planks, paper) */
+            --card-border: #A0522D; /* Sienna (Darker wood border) */
+            --input-bg: #FFF8DC; /* Cornsilk (Lighter paper/input field) */
+            --input-border: #B8860B; /* DarkGoldenrod */
+
+            --button-primary-bg: #8B4513; /* SaddleBrown (Wood Button) */
+            --button-primary-text: var(--text-on-dark-bg);
+            --button-secondary-bg: var(--accent-green);
+            --button-secondary-text: var(--text-on-dark-bg);
+            
+            --success-bg: rgba(85, 107, 47, 0.2); /* DarkOliveGreen transparent */
+            --success-text: #3A5F0B; /* Darker Green */
+            --success-border: var(--accent-green);
+
+            --warning-bg: rgba(218, 165, 32, 0.2); /* Goldenrod transparent */
+            --warning-text: #8C5B00; /* Dark Yellow/Brown */
+            --warning-border: var(--accent-yellow);
+            
+            --danger-bg: rgba(205, 92, 92, 0.2); /* IndianRed transparent */
+            --danger-text: #A52A2A; /* Brown (for red text) */
+            --danger-border: var(--accent-red);
+
+            /* Pixelated box shadow (more like an outline) */
+            --pixel-shadow: 2px 2px 0px 0px var(--text-primary);
+            --pixel-shadow-hover: 3px 3px 0px 0px var(--text-primary);
+        }
+
+        body {
+            font-family: 'VT323', monospace; /* Pixel font for body */
+            background: linear-gradient(180deg, var(--bg-page-start) 0%, var(--bg-page-end) 100%);
+            color: var(--text-primary); 
+            font-size: 18px; /* Pixel fonts often need to be larger */
+            line-height: 1.6;
+            position: relative; 
+            overflow-x: hidden;
+            min-height: 100vh;
+            image-rendering: pixelated; /* Helps with pixel font rendering */
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Press Start 2P', cursive; /* Pixel font for headers */
+            color: var(--text-primary); 
+            letter-spacing: 1px; /* Adjust spacing for pixel fonts */
+            margin-bottom: 0.75em;
+        }
+        h1 {
+            font-size: 2.2rem; /* Adjusted for pixel font */
+            color: var(--accent-orange); 
+            text-shadow: 2px 2px 0px var(--text-primary);
+        }
+        h2 {
+            font-size: 1.6rem; /* Adjusted */
+            color: var(--accent-green); 
+            text-shadow: 1px 1px 0px var(--text-primary);
+        }
+        h3 {
+            font-size: 1.2rem;
+        }
+
+        p, label, span, div, li { 
+             color: var(--text-secondary);
+        }
+        /* Tailwind text color overrides */
+        .text-stone-900, .text-stone-800 { color: var(--text-primary) !important; }
+        .text-stone-700, .text-stone-600, .text-stone-500 { color: var(--text-secondary) !important; } 
+
+        .bg-white { /* This class is widely used, repurpose for Stardew card style */
+            background-color: var(--card-bg) !important; 
+            border: 2px solid var(--card-border) !important;
+            box-shadow: var(--pixel-shadow) !important; 
+            border-radius: 0px !important; /* Pixel aesthetic often avoids rounded corners */
+            padding: 1rem;
+        }
+        .shadow-lg { box-shadow: var(--pixel-shadow-hover) !important; } 
+        
+        button, .button-like {
+            font-family: 'Press Start 2P', cursive; 
+            font-size: 0.7rem; /* Pixel fonts are blocky */
+            text-transform: uppercase;
+            background: var(--button-primary-bg);
+            color: var(--button-primary-text) !important; 
+            border: 2px solid var(--text-primary); 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 0px; 
+            box-shadow: var(--pixel-shadow); 
+            transition: all 0.1s ease-in-out;
+            cursor: pointer; /* Explicit pointer */
+        }
+        button:hover, .button-like:hover {
+            transform: translate(-1px, -1px); 
+            box-shadow: var(--pixel-shadow-hover);
+            filter: brightness(1.1);
+        }
+        button:active, .button-like:active {
+            transform: translate(1px, 1px);
+            box-shadow: none;
+        }
+        button:disabled, .button-like:disabled {
+            background: #A9A9A9 !important; /* DarkGray */
+            color: #D3D3D3 !important; /* LightGray */
+            box-shadow: none !important;
+            border-color: #696969 !important; /* DimGray */
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .bg-blue-500 { background: var(--accent-blue) !important; color: var(--text-on-dark-bg) !important; border-color: var(--text-primary) !important;}
+        .bg-blue-500:hover { background: #5F9EA0 !important; } /* CadetBlue */
+        
+        .bg-emerald-500 { background: var(--accent-green) !important; color: var(--text-on-dark-bg) !important; border-color: var(--text-primary) !important;}
+        .bg-emerald-500:hover { background: #6B8E23 !important; } /* OliveDrab */
+
+        .bg-sky-500 { background: var(--accent-yellow) !important; color: var(--text-primary) !important; border-color: var(--text-primary) !important;}
+        .bg-sky-500:hover { background: #BDB76B !important; } /* DarkKhaki */
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 12px; /* Chunkier slider */
+            background: #D2B48C; /* Tan track */
+            border: 2px solid var(--text-primary);
+            border-radius: 0px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 24px; /* Rectangular thumb */
+            background: var(--accent-orange);
+            border-radius: 0px;
+            border: 2px solid var(--text-primary);
+            cursor: pointer;
+            box-shadow: 1px 1px 0px var(--text-primary);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 24px;
+            background: var(--accent-orange);
+            border-radius: 0px;
+            border: 2px solid var(--text-primary);
+            cursor: pointer;
+            box-shadow: 1px 1px 0px var(--text-primary);
+        }
+        
+        textarea, input[type="text"] { 
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            background-color: var(--input-bg) !important; 
+            border: 2px solid var(--input-border) !important; 
+            color: var(--text-primary) !important;
+            padding: 0.5rem 0.7rem;
+            border-radius: 0px; 
+            box-shadow: inset 1px 1px 0px rgba(0,0,0,0.1); 
+        }
+        textarea:focus, input[type="text"]:focus {
+            border-color: var(--accent-orange) !important;
+            box-shadow: inset 1px 1px 0px rgba(0,0,0,0.1), 0 0 0 2px var(--accent-yellow); 
+            outline: none;
+        }
+        ::placeholder { color: var(--text-secondary); opacity: 0.7; } 
+
+        .toggle-label {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem; 
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 0.6rem 0.9rem; 
+            border-radius: 0px;
+            transition: all 0.1s ease;
+            box-shadow: var(--pixel-shadow);
+        }
+        .toggle-label.active {
+            background-color: var(--accent-blue);
+            color: var(--text-on-dark-bg) !important; 
+            box-shadow: none; 
+            transform: translate(2px, 2px);
+        }
+        .toggle-radio { display: none; }
+
+        .chart-container {
+            border: 2px solid var(--card-border);
+            padding: 1rem; 
+            background: rgba(245, 222, 179, 0.7); /* Wheat transparent */
+            border-radius: 0px;
+        }
+        
+        #intro-modal > div.bg-white, #ai-response-modal > div.bg-white { 
+            background: var(--card-bg) !important; 
+            border: 3px solid var(--card-border) !important; 
+            box-shadow: 4px 4px 0px 0px var(--text-primary) !important; 
+            color: var(--text-primary); 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            border-radius: 0px;
+        }
+        #intro-modal > div.bg-white p, #intro-modal > div.bg-white li,
+        #ai-response-modal > div.bg-white p, #ai-response-modal > div.bg-white li {
+            color: var(--text-secondary) !important; 
+            font-size: 17px; /* Slightly smaller for modal text */
+        }
+        #intro-modal h2, #ai-response-modal h2 { 
+            color: var(--accent-red) !important;
+            font-size: 1.4rem;
+        }
+        #ai-response-modal #close-ai-response-modal-button {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--accent-red);
+            font-size: 1.5rem; 
+            border: 2px solid var(--accent-red);
+            padding: 0 0.3rem;
+            background-color: var(--card-bg);
+            box-shadow: var(--pixel-shadow);
+        }
+        #ai-response-modal #close-ai-response-modal-button:hover {
+            background-color: var(--accent-red);
+            color: var(--text-on-dark-bg);
+        }
+
+        #consequences-log {
+            border: 2px solid var(--card-border); 
+            padding: 0.5rem;
+            background: var(--input-bg); 
+            border-radius: 0px;
+            font-size: 16px; /* Readability for logs */
+        }
+        #latest-impact-display {
+            border: 2px dashed var(--warning-border); 
+            background-color: var(--warning-bg); 
+            color: var(--warning-text);
+            border-radius: 0px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--pixel-shadow);
+        }
+        #latest-impact-display.decrease {
+            border-color: var(--danger-border);
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+        }
+        #latest-impact-display.increase { 
+             border-color: var(--success-border);
+             background-color: var(--success-bg);
+             color: var(--success-text);
+        }
+        
+        #consequences-log .bg-red-50 { background-color: var(--danger-bg) !important; border-left: 3px solid var(--danger-border) !important; }
+        #consequences-log .bg-yellow-50 { background-color: var(--warning-bg) !important; border-left: 3px solid var(--warning-border) !important; }
+
+
+        #hover-tooltip {
+            position: absolute; 
+            background-color: var(--text-primary); 
+            border: 2px solid var(--accent-yellow);
+            color: var(--text-on-dark-bg) !important; 
+            box-shadow: var(--pixel-shadow); 
+            font-size: 15px; 
+            padding: 0.5rem 0.7rem;
+            z-index: 1001; 
+            pointer-events: none; 
+            border-radius: 0px;
+        }
+
+        .info-icon { /* Using text for info icon for pixel feel */
+            font-family: 'Press Start 2P', cursive;
+            color: var(--accent-blue);
+            font-size: 0.9em;
+            padding: 0 0.2em;
+            border: 1px solid transparent; /* For hover effect */
+            cursor: help;
+            display: inline-block;
+            line-height: 1;
+        }
+        .info-icon:hover {
+            color: var(--accent-red);
+            background-color: var(--accent-yellow);
+            border-color: var(--text-primary);
+        }
+        
+        /* AI Button Icons - Simplified SVGs or could be replaced with pixel art text/emoji */
+        .ai-button svg {
+            stroke-width: 2px; /* Thicker lines for pixel feel */
+            width: 18px; height: 18px; /* Adjust size */
+            vertical-align: middle;
+        }
+        .ai-button:hover svg {
+           filter: none; /* Remove previous filter */
+        }
+        .text-sky-500 { color: var(--accent-blue) !important; }
+        .text-orange-500 { color: var(--accent-orange) !important; }
+
+
+        #total-display {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.9rem; 
+            padding: 0.8rem;
+            border-radius: 0px;
+            border-width: 2px;
+            border-style: solid;
+            box-shadow: var(--pixel-shadow);
+        }
+        #total-display.bg-red-100 { background-color: var(--danger-bg) !important; color: var(--danger-text) !important; border-color: var(--danger-border) !important; }
+        #total-display.bg-green-100 { background-color: var(--success-bg) !important; color: var(--success-text) !important; border-color: var(--success-border) !important; }
+        #total-display.bg-blue-100 { background-color: var(--warning-bg) !important; color: var(--warning-text) !important; border-color: var(--warning-border) !important; }
+
+        ::-webkit-scrollbar {
+            width: 12px; /* Chunkier scrollbar */
+        }
+        ::-webkit-scrollbar-track {
+            background: #D2B48C; /* Tan */
+            border-left: 2px solid var(--text-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border: 2px solid var(--text-primary);
+            border-radius: 0px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B8E23; /* OliveDrab */
+        }
+        
+        .main-category-header h3 { 
+            color: var(--text-primary) !important; 
+        }
+        .main-category-header span[id^="main-"][id$="-value"] { 
+            color: var(--accent-red) !important; 
+            font-family: 'VT323', monospace;
+            font-size: 1.1em;
+        }
+        .main-category-header {
+             border-bottom: 2px dashed var(--card-border) !important; 
+             padding-bottom: 0.5rem;
+        }
+
+        .subcategory-sliders-container label {
+            color: var(--text-primary) !important; 
+            font-size: 1.0em; 
+        }
+        .subcategory-sliders-container span[id^="sub_"][id$="-value"] {
+            color: var(--accent-blue) !important; 
+            font-family: 'VT323', monospace;
+            font-size: 1.0em;
+        }
+        
+        .loader {
+            border: 4px solid rgba(74, 59, 49, 0.2); /* Dark Brown transparent */
+            border-top: 4px solid var(--accent-orange);
+            border-radius: 50%; /* Keep loader round for contrast */
+            width: 40px; 
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .blink {
+            animation: subtlePulse 1.5s infinite steps(2, jump-none); /* Pixel blink */
+        }
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body class="text-stone-800"> 
+    <div id="app" class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl md:text-5xl">U.S. Budget Sim: Farmstead Edition</h1>
+            <p class="text-stone-600 mt-3 text-sm md:text-base max-w-3xl mx-auto">Howdy! Adjust the sliders, see what sprouts up, and get some ol' fashioned AI advice!</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8">
+            
+            <div class="lg:col-span-3 bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-2xl">Your Budget Plan</h2>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-medium text-stone-600">Show amounts in:</span>
+                        <div id="allocation-mode-toggle" class="flex">
+                            <input type="radio" id="mode-percentage" name="allocationMode" value="percentage" class="toggle-radio" checked>
+                            <label for="mode-percentage" class="toggle-label active">% Total</label>
+                            <input type="radio" id="mode-dollars" name="allocationMode" value="dollars" class="toggle-radio">
+                            <label for="mode-dollars" class="toggle-label">$ USD</label>
+                        </div>
+                        <button id="reset-button" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors ml-2 text-xs">Reset All</button>
+                    </div>
+                </div>
+                <div id="sliders-and-categories-container" class="space-y-4"> </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl text-center mb-4">Budget Snapshot</h2>
+                    <div id="total-display" class="text-center mb-4 p-3 rounded-lg text-lg"></div>
+                    <div class="chart-container">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl mb-4">What's Happenin'?</h2>
+                    <div id="consequences-log" class="space-y-3 h-64 md:h-72 overflow-y-auto pr-2 text-xs">
+                        <p class="text-stone-500 italic">Wiggle them sliders to see the town gossip...</p>
+                    </div>
+                    <button id="generate-analysis-button" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        AI Town Hall Meeting
+                    </button>
+                </div>
+
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl mb-3">Ask the Mayor (AI)!</h2>
+                    <p class="text-sm text-stone-600 mb-3">What's yer main goal for this here budget?</p>
+                    <textarea id="ai-advice-goal" rows="3" class="w-full p-2 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 'More crops!' or 'Better schools for the youngins'"></textarea>
+                    <button id="get-ai-advice-button" class="mt-3 w-full bg-sky-500 hover:bg-sky-600 text-white py-3 px-4 rounded-lg transition-colors">
+                        Get Advice
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="latest-impact-display" class="text-stone-700 p-3 mb-4 rounded-lg">
+        <p class="italic text-stone-500">Latest news from the valley...</p>
+    </div>
+
+    <div id="intro-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+         <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full transform transition-all scale-100">
+            <h2 class="text-2xl mb-4 text-center">Welcome, Budget Farmer!</h2>
+            <p class="text-stone-600 mb-3">
+                Ready to till the fields of finance? Use sliders to sow your funds. View by **% Total** or **Gold Pieces (USD)**. Aim for **100%** or the **Target Hoard**.
+            </p>
+             <p class="text-stone-600 mb-3">
+                **Latest News** pops up by the changed crop. All news is in **What's Happenin'?**.
+            </p>
+            <p class="text-stone-600 mb-3">
+                Hover [?] for crop details.
+            </p>
+            <p class="text-stone-600 mb-4">
+                The AI Mayor can help:
+                <ul class="list-disc list-inside text-sm text-stone-600 ml-4 space-y-1">
+                    <li>`AI Town Hall`: Chat about your whole budget.</li>
+                    <li>`AI Mayor`: Get tips for your goals.</li>
+                    <li>[💡] (Lightbulb): Explain a news item.</li>
+                    <li>[🧠] (Brain) (if you cut too deep): Suggest other ways to save gold.</li>
+                </ul>
+            </p>
+            <button id="close-modal-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors text-lg mt-2">Let's Get Farm-Fiscal!</button>
+        </div>
+    </div>
+
+    <div id="ai-response-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[60] hidden">
+         <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-xl w-full">
+             <div class="flex justify-between items-center mb-4">
+                <h2 id="ai-modal-title" class="text-2xl">Message from the AI Mayor</h2>
+                <button id="close-ai-response-modal-button" class="text-stone-500 hover:text-stone-700 text-2xl">X</button>
+            </div>
+            <div id="ai-modal-content" class="modal-content space-y-4 text-sm">
+                </div>
+        </div>
+    </div>
+    
+    <div id="hover-tooltip" class="hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const TOTAL_FEDERAL_BUDGET_USD = 6800000000000; 
+            const SUB_CATEGORY_CONSEQUENCE_THRESHOLD_PERCENT_OF_TOTAL = 0.05; 
+
+            // Stardew Valley Inspired Chart Colors
+            const chartColors = {
+                defense: 'var(--accent-blue)',       // Steel Blue
+                healthcare: 'var(--accent-red)',     // Indian Red
+                social_security: 'var(--accent-yellow)',// Goldenrod
+                education: '#8A2BE2',                 // BlueViolet (Purple crop)
+                infrastructure: 'var(--accent-orange)', // Chocolate (Wood/Stone)
+                environment: 'var(--accent-green)', // Dark Olive Green (Nature)
+                research: '#40E0D0',                  // Turquoise (Gem-like)
+                veterans: '#B8860B',                  // DarkGoldenrod (Medal-like)
+                other: '#A9A9A9'                      // DarkGray (Misc)
+            };
+
+            const initialBudgetDataRaw = [ 
+                 { 
+                    id: 'defense', name: 'Town Guard', baselinePercent: 21, color: chartColors.defense, 
+                    description: 'Swords, shields, training.',
+                    hoverExplanation: 'Keeps Pelican Town safe! Covers salaries for guards, weapon upkeep, training exercises, and scouting nearby forests and mines for danger.',
+                    consequences: { decrease: 'Town less safe from slimes; guard morale drops.', increase: 'Overly militarized town, less gold for farming tools.' },
+                    subcategories: [
+                        { id: 'personnel', name: 'Guard Salaries', baselineShareOfParent: 40, hoverExplanation: "Gold for our brave guards and their families.", consequences: { decrease: "Guards might leave for greener pastures (literally).", increase: "Well-paid guards, but are they doing more patrols?"} },
+                        { id: 'operations_maintenance', name: 'Gear & Supplies', baselineShareOfParent: 30, hoverExplanation: "Sharpening swords, mending shields, buying potions.", consequences: { decrease: "Rusty swords and leaky potions.", increase: "Top-notch gear, maybe too fancy for slimes."} },
+                        { id: 'procurement', name: 'New Equipment', baselineShareOfParent: 20, hoverExplanation: "Buying new catapults or maybe a golem.", consequences: { decrease: "Still using last season's wooden swords.", increase: "Shiny new gear, but does anyone know how to use it?"} },
+                        { id: 'rdte', name: 'Scouting & Intel', baselineShareOfParent: 10, hoverExplanation: "Paying adventurers to map out the spooky caves.", consequences: { decrease: "More surprise monster attacks!", increase: "We know where every single slime lives."} }
+                    ]
+                },
+                { 
+                    id: 'healthcare', name: 'Clinic & Potions', baselinePercent: 25, color: chartColors.healthcare, 
+                    description: 'Harvey_s clinic, healing items.',
+                    hoverExplanation: 'Funds Harvey_s clinic, research for new poultices, and subsidies for healing potions from the local apothecary.',
+                    consequences: { decrease: 'Longer waits at Harvey_s; potion prices go up.', increase: 'Everyone is super healthy, but clinic might be overstaffed.' },
+                    subcategories: [
+                        { id: 'medicare', name: 'Elderly Care', baselineShareOfParent: 60, hoverExplanation: "Special care for George and Evelyn.", consequences: { decrease: "Evelyn might run out of cookies to give.", increase: "George gets a new super-comfy wheelchair."}},
+                        { id: 'medicaid_chip', name: 'Community Health', baselineShareOfParent: 30, hoverExplanation: "Free check-ups for all villagers, kids_ health.", consequences: { decrease: "Kids get more colds, adventurers less hardy.", increase: "Everyone is robust and ready for farming!"}},
+                        { id: 'public_health_research', name: 'Potion Research', baselineShareOfParent: 10, hoverExplanation: "Wizard and Harvey team up for new elixirs.", consequences: { decrease: "Stuck with basic healing potions.", increase: "Discovery of the Potion of Eternal Harvest!" } }
+                    ]
+                },
+                { 
+                    id: 'social_security', name: 'Elder Support Fund', baselinePercent: 23, color: chartColors.social_security, 
+                    description: 'Pensions for retired townsfolk.',
+                    hoverExplanation: 'Ensures our respected elders like George and Evelyn can afford their favorite rocking chairs and endless cups of tea.',
+                    consequences: { decrease: 'Elders might have to sell their prized chickens.', increase: 'Elders throw lavish tea parties, but less for community projects.' },
+                    subcategories: [
+                        { id: 'oasi', name: 'Retirement Stipends', baselineShareOfParent: 85, hoverExplanation: "Monthly gold for retired villagers.", consequences: {decrease: "Elders can't afford festival tickets.", increase: "Elders start investing in risky turnip futures."}},
+                        { id: 'di', name: 'Disability Support', baselineShareOfParent: 13, hoverExplanation: "Help for those injured in the mines.", consequences: {decrease: "Injured adventurers have to rely on fishing.", increase: "Excellent care for the brave but clumsy."}},
+                        { id: 'admin_ss', name: 'Fund Management', baselineShareOfParent: 2, hoverExplanation: "Lewis's paperwork for the fund.", consequences: {decrease: "Lewis misplaces pension checks.", increase: "Lewis buys a golden quill for record-keeping."}}
+                    ]
+                },
+                 { 
+                    id: 'education', name: 'School & Library', baselinePercent: 4, color: chartColors.education, 
+                    description: 'Penny_s school, books for all.',
+                    hoverExplanation: 'Supports Penny_s schoolhouse, new books for the library, and maybe even field trips for Jas and Vincent to the city.',
+                    consequences: { decrease: 'Kids play in the dirt more; library gets dusty.', increase: 'Our kids will be the smartest in the valley, but less for roads.' },
+                    subcategories: [
+                        { id: 'k12_support', name: 'Schoolhouse Supplies', baselineShareOfParent: 50, hoverExplanation: "Chalk, books, snacks for Jas & Vincent.", consequences: {decrease: "Penny has to teach with charcoal.", increase: "Gold-plated abacus for math class."}},
+                        { id: 'higher_ed_aid', name: 'Library Fund', baselineShareOfParent: 40, hoverExplanation: "New books, comfy chairs for reading.", consequences: {decrease: "Gunther can't acquire new ancient scrolls.", increase: "Library gets a rare first edition of 'Mysterium Xarxes'."}},
+                        { id: 'early_childhood', name: 'Toddler Playgroup', baselineShareOfParent: 10, hoverExplanation: "Safe play area for the youngest villagers.", consequences: {decrease: "Toddlers might wander into the mines.", increase: "A ball pit filled with soft wool."}}
+                    ]
+                },
+                { 
+                    id: 'infrastructure', name: 'Town Improvements', baselinePercent: 5, color: chartColors.infrastructure, 
+                    description: 'Roads, bridges, community center.',
+                    hoverExplanation: 'Fixing roads, maintaining bridges, and ongoing repairs and upgrades to the Community Center once it_s restored.',
+                    consequences: { decrease: 'Potholes get bigger; Community Center roof leaks.', increase: 'Smooth roads for everyone, but less gold for festivals.' },
+                    subcategories: [
+                        { id: 'transportation_infra', name: 'Roads & Bridges', baselineShareOfParent: 60, hoverExplanation: "Fixing paths, minecart system upkeep.", consequences: {decrease: "Horse gets stuck in potholes more often.", increase: "Paved roads all the way to Zuzu City."}},
+                        { id: 'water_utilities_infra', name: 'Wells & Waterways', baselineShareOfParent: 25, hoverExplanation: "Clean wells, maintaining irrigation ditches.", consequences: {decrease: "Crops get thirsty, Willy's bait might spoil.", increase: "Crystal clear water for everyone."}},
+                        { id: 'broadband_comm_infra', name: 'Community Center', baselineShareOfParent: 15, hoverExplanation: "Upkeep and new rooms for the Center.", consequences: {decrease: "Community Center starts looking like the JojaMart again.", increase: "A golden statue of Mayor Lewis in the lobby."}}
+                    ]
+                },
+                // ... Other categories would be similarly re-themed ...
+                { 
+                    id: 'environment', name: 'Forest & Rivers', baselinePercent: 2, color: chartColors.environment, 
+                    description: 'Nature preservation, clean energy.',
+                    hoverExplanation: 'Keeping the Cindersap Forest healthy, ensuring the river is clean for fishing, and Linus_s tent doesn_t get washed away. Maybe some solar panels for the town.',
+                    consequences: { decrease: 'More trash in the river; fewer foraging spots.', increase: 'Pristine nature, but less funding for town expansion.' },
+                     subcategories: [
+                        { id: 'epa_regulation', name: 'Forest Warden', baselineShareOfParent: 40, hoverExplanation: "Pays for a Forest Warden to prevent fires and Joja dumping.", consequences: {decrease: "Joja Co. might start dumping cola in the river.", increase: "The forest becomes a protected ancient grove."}},
+                        { id: 'conservation_resources', name: 'River Cleanup Crew', baselineShareOfParent: 35, hoverExplanation: "Volunteers get stipends to remove trash from waterways.", consequences: {decrease: "Willy catches more soggy newspapers than fish.", increase: "The river fish win awards for their cleanliness."}},
+                        { id: 'energy_dev_research', name: 'Windmill Project', baselineShareOfParent: 25, hoverExplanation: "Maru's project to build a windmill for town power.", consequences: {decrease: "Town still relies on candles and Joja power.", increase: "Clean energy for everyone, but noisy windmill."}}
+                    ]
+                },
+                { 
+                    id: 'research', name: 'Wizard & Maru_s Lab', baselinePercent: 3, color: chartColors.research, 
+                    description: 'Magic research, new inventions.',
+                    hoverExplanation: 'Funds for the Wizard_s arcane research and Maru_s tinkering in her workshop. Who knows what they_ll come up with!',
+                    consequences: { decrease: 'Fewer cool inventions; Wizard gets grumpy.', increase: 'Maru might accidentally invent a robot army.' },
+                    subcategories: [
+                        { id: 'nsf_general_science', name: 'Maru_s Inventions', baselineShareOfParent: 40, hoverExplanation: "Gears, wires, and funding for Maru's gadgets.", consequences: {decrease: "Maru can only build potato alarm clocks.", increase: "Maru builds a robot to do all the farming."}},
+                        { id: 'nasa_space', name: 'Wizard_s Tower Fund', baselineShareOfParent: 35, hoverExplanation: "Rare ingredients for spells, new robes for the Wizard.", consequences: {decrease: "Wizard has to use common mushrooms for potions.", increase: "Wizard teleports the entire town to the moon (briefly)."}},
+                        { id: 'doe_applied_tech', name: 'Ancient Tech Study', baselineShareOfParent: 25, hoverExplanation: "Gunther and the Wizard study Dwarf scrolls.", consequences: {decrease: "Secrets of the Ancients remain lost.", increase: "They uncover the recipe for Iridium Sprinklers!"}}
+                    ]
+                },
+                { 
+                    id: 'veterans', name: 'Adventurer_s Guild Fund', baselinePercent: 5, color: chartColors.veterans, 
+                    description: 'Support for mine delvers.',
+                    hoverExplanation: 'Healthcare, better gear, and recovery support for brave adventurers who delve into the dangerous mines for ore and glory.',
+                    consequences: { decrease: 'Adventurers are less equipped; more slime-related injuries.', increase: 'Guild members get too comfortable, stop adventuring.' },
+                    subcategories: [
+                        { id: 'va_medical_care', name: 'Injury Recovery', baselineShareOfParent: 60, hoverExplanation: "Healing potions and bed rest at Harvey's for injured delvers.", consequences: {decrease: "Adventurers patch themselves up with tree sap.", increase: "Full health insurance for every stubbed toe."}},
+                        { id: 'va_disability_pensions', name: 'Monster Eradication Bounties', baselineShareOfParent: 25, hoverExplanation: "Rewards for clearing out dangerous mine levels.", consequences: {decrease: "Mines become overrun with monsters.", increase: "Adventurers become rich, buy all the parsnips."}},
+                        { id: 'va_education_other', name: 'Gear Upgrades', baselineShareOfParent: 15, hoverExplanation: "Subsidies for stronger swords and tougher boots from Marlon.", consequences: {decrease: "Adventurers fight slimes with rusty spoons.", increase: "Everyone gets an Iridium Needle."}}
+                    ]
+                },
+                { 
+                    id: 'other', name: 'Festivals & Misc.', baselinePercent: 12, color: chartColors.other, 
+                    description: 'Town events, Lewis_s shorts fund.',
+                    hoverExplanation: 'Funding for seasonal festivals, community events, maintenance of Lewis_s lucky purple shorts, and other miscellaneous town needs.',
+                    consequences: { decrease: 'Fewer festivals; Lewis_s shorts get worn out.', increase: 'Non-stop parties, but who_s farming?' },
+                    subcategories: [
+                        { id: 'justice_law', name: 'Festival Planning', baselineShareOfParent: 30, hoverExplanation: "Decorations, food, prizes for town festivals.", consequences: {decrease: "The Egg Festival only has three eggs.", increase: "A different festival every week!"}},
+                        { id: 'agriculture_rural', name: 'Seed Subsidies', baselineShareOfParent: 25, hoverExplanation: "Helping new farmers buy their first seeds from Pierre.", consequences: {decrease: "Fewer new farms, Pierre's profits dip.", increase: "Everyone gets free Ancient Fruit seeds."}},
+                        { id: 'international_affairs', name: 'Tourism Bureau', baselineShareOfParent: 25, hoverExplanation: "Attracting visitors from Zuzu City (and beyond!).", consequences: {decrease: "Town remains a hidden gem (too hidden).", increase: "Busloads of tourists overwhelm the Saloon."}},
+                        { id: 'general_gov_other', name: 'Mayor_s Discretionary Fund', baselineShareOfParent: 20, hoverExplanation: "For Lewis to... manage town affairs. And find his shorts.", consequences: {decrease: "Lewis can't afford gold statues of himself.", increase: "A solid gold statue of Lewis in the town square."}}
+                    ]
+                },
+            ];
+            
+            function getComputedColor(cssVarString) {
+                if (cssVarString && typeof cssVarString === 'string' && cssVarString.startsWith('var(')) {
+                    const varName = cssVarString.substring(4, cssVarString.length - 1);
+                    try {
+                        const color = getComputedStyle(document.documentElement).getPropertyValue(varName.trim()).trim();
+                        return color || cssVarString; 
+                    } catch (e) {
+                        console.warn(`Could not compute CSS variable: ${cssVarString}`, e);
+                        return cssVarString; 
+                    }
+                }
+                return cssVarString; 
+            }
+
+
+            function processInitialData(rawData) {
+                const processedData = [];
+                rawData.forEach(mainCatRaw => {
+                    const mainCategory = {
+                        id: mainCatRaw.id,
+                        name: mainCatRaw.name,
+                        description: mainCatRaw.description,
+                        hoverExplanation: mainCatRaw.hoverExplanation,
+                        color: mainCatRaw.color, 
+                        subcategories: [],
+                        valuePercent: 0, 
+                        valueUSD: 0      
+                    };
+
+                    if (mainCatRaw.subcategories) {
+                        let sumOfBaselineShares = mainCatRaw.subcategories.reduce((sum, sub) => sum + sub.baselineShareOfParent, 0);
+                        mainCatRaw.subcategories.forEach(subRaw => {
+                            let normalizedBaselineShareOfParent = subRaw.baselineShareOfParent;
+                            if (sumOfBaselineShares !== 100 && sumOfBaselineShares > 0) {
+                                normalizedBaselineShareOfParent = (subRaw.baselineShareOfParent / sumOfBaselineShares) * 100;
+                            } else if (sumOfBaselineShares === 0 && mainCatRaw.subcategories.length > 0) {
+                                normalizedBaselineShareOfParent = 100 / mainCatRaw.subcategories.length;
+                            }
+
+                            const baselinePercentOfTotal = (mainCatRaw.baselinePercent * normalizedBaselineShareOfParent) / 100;
+                            const subCategory = {
+                                ...subRaw, 
+                                parentId: mainCatRaw.id,
+                                parentName: mainCatRaw.name,
+                                valuePercent: baselinePercentOfTotal, 
+                                valueUSD: (baselinePercentOfTotal / 100) * TOTAL_FEDERAL_BUDGET_USD,
+                                originalBaselinePercent: baselinePercentOfTotal, 
+                            };
+                            mainCategory.subcategories.push(subCategory);
+                            mainCategory.valuePercent += subCategory.valuePercent;
+                            mainCategory.valueUSD += subCategory.valueUSD;
+                        });
+                    }
+                    processedData.push(mainCategory);
+                });
+                return processedData;
+            }
+            
+            let budgetData = processInitialData(initialBudgetDataRaw);
+            let currentSliderBaselines = {}; 
+            let allocationMode = 'percentage'; 
+
+            let chart;
+            const slidersAndCategoriesContainer = document.getElementById('sliders-and-categories-container');
+            const totalDisplay = document.getElementById('total-display');
+            const consequencesLog = document.getElementById('consequences-log');
+            const latestImpactDisplay = document.getElementById('latest-impact-display'); 
+            const resetButton = document.getElementById('reset-button');
+            const introModal = document.getElementById('intro-modal');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const allocationModeToggle = document.getElementById('allocation-mode-toggle');
+            const hoverTooltip = document.getElementById('hover-tooltip');
+            
+            const generateAnalysisButton = document.getElementById('generate-analysis-button');
+            const aiAdviceGoalInput = document.getElementById('ai-advice-goal');
+            const getAIAdviceButton = document.getElementById('get-ai-advice-button');
+            
+            const aiResponseModal = document.getElementById('ai-response-modal');
+            const aiModalTitle = document.getElementById('ai-modal-title');
+            const aiModalContent = document.getElementById('ai-modal-content');
+            const closeAIResponseModalButton = document.getElementById('close-ai-response-modal-button');
+
+            function formatCurrency(value) { // Stardew uses "g" for gold
+                if (value >= 1e12) { return `${(value / 1e12).toFixed(2)} Trillion g`; }
+                if (value >= 1e9) { return `${(value / 1e9).toFixed(1)} Billion g`; }
+                if (value >= 1e6) { return `${(value / 1e6).toFixed(0)} Million g`; }
+                return `${value.toLocaleString()} g`;
+            }
+
+            function storeCurrentBaselinesForConsequences() {
+                currentSliderBaselines = {}; 
+                budgetData.forEach(mainItem => {
+                    if (mainItem.subcategories) {
+                        mainItem.subcategories.forEach(subItem => {
+                            const sliderId = `sub_${mainItem.id}_${subItem.id}`;
+                            currentSliderBaselines[sliderId] = allocationMode === 'percentage' ? subItem.valuePercent : subItem.valueUSD;
+                        });
+                    }
+                });
+            }
+
+            function createSliders() {
+                slidersAndCategoriesContainer.innerHTML = ''; 
+                
+                budgetData.forEach(mainItem => {
+                    const mainCategorySection = document.createElement('div');
+                    mainCategorySection.id = `main-category-section-${mainItem.id}`;
+                    mainCategorySection.classList.add('mb-6', 'p-3', 'bg-white'); // bg-white is now our card style
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.classList.add('flex', 'justify-between', 'items-center', 'mb-3', 'main-category-header');
+                    headerDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <h3 class="text-xl">${mainItem.name}</h3>
+                            <span class="info-icon ml-2 text-lg" data-tooltip-text="${mainItem.hoverExplanation || mainItem.description}">[?]</span>
+                        </div>
+                        <span id="main-${mainItem.id}-value" class="text-xl">
+                            ${allocationMode === 'percentage' ? mainItem.valuePercent.toFixed(1) + '%' : formatCurrency(mainItem.valueUSD)}
+                        </span>
+                    `;
+                    mainCategorySection.appendChild(headerDiv);
+
+                    const subcategoriesContainer = document.createElement('div');
+                    subcategoriesContainer.classList.add('subcategory-sliders-container', 'space-y-5'); // More space for chunky style
+                    
+                    if (mainItem.subcategories) {
+                        mainItem.subcategories.forEach(subItem => {
+                            const subSliderWrapper = document.createElement('div');
+                            const sliderId = `sub_${mainItem.id}_${subItem.id}`;
+                            
+                            let subDisplayValue, subSliderValue, subSliderMin, subSliderMax, subSliderStep;
+
+                            if (allocationMode === 'percentage') { 
+                                subDisplayValue = `${subItem.valuePercent.toFixed(1)}%`;
+                                subSliderValue = subItem.valuePercent;
+                                subSliderMin = 0; subSliderMax = 30; 
+                                subSliderStep = 0.1;
+                            } else { 
+                                subDisplayValue = formatCurrency(subItem.valueUSD);
+                                subSliderValue = subItem.valueUSD;
+                                subSliderMin = 0; subSliderMax = TOTAL_FEDERAL_BUDGET_USD * 0.30; 
+                                subSliderStep = 1000000000; 
+                            }
+
+                            subSliderWrapper.innerHTML = `
+                                <div class="flex justify-between items-center mb-1">
+                                    <div class="flex items-center">
+                                        <label for="${sliderId}">${subItem.name}</label>
+                                        <span class="info-icon ml-1 text-sm" data-tooltip-text="${subItem.hoverExplanation || subItem.name}">[?]</span>
+                                    </div>
+                                    <span id="${sliderId}-value">${subDisplayValue}</span>
+                                </div>
+                                <input type="range" id="${sliderId}" data-parent-id="${mainItem.id}" data-sub-id="${subItem.id}" 
+                                       min="${subSliderMin}" max="${subSliderMax}" value="${subSliderValue}" step="${subSliderStep}" 
+                                       class="w-full h-3 appearance-none cursor-pointer">
+                            `; 
+                            subcategoriesContainer.appendChild(subSliderWrapper);
+                        });
+                    }
+                    mainCategorySection.appendChild(subcategoriesContainer);
+                    slidersAndCategoriesContainer.appendChild(mainCategorySection);
+                });
+                storeCurrentBaselinesForConsequences(); 
+                addEventListenersToSlidersAndButtons();
+            }
+            
+            function updateAll(changedSliderId = null) {
+                let overallTotalPercent = 0;
+                let overallTotalUSD = 0;
+
+                budgetData.forEach(mainItem => {
+                    let mainCatTotalPercent = 0;
+                    let mainCatTotalUSD = 0;
+
+                    if (mainItem.subcategories) {
+                        mainItem.subcategories.forEach(subItem => {
+                            const sliderId = `sub_${mainItem.id}_${subItem.id}`;
+                            const subSlider = document.getElementById(sliderId);
+
+                            if (subSlider) { 
+                                if (!changedSliderId || changedSliderId === sliderId) { 
+                                    const sliderValue = parseFloat(subSlider.value);
+                                    if (allocationMode === 'percentage') {
+                                        subItem.valuePercent = sliderValue; 
+                                        subItem.valueUSD = (sliderValue / 100) * TOTAL_FEDERAL_BUDGET_USD;
+                                    } else { 
+                                        subItem.valueUSD = sliderValue;
+                                        subItem.valuePercent = (sliderValue / TOTAL_FEDERAL_BUDGET_USD) * 100;
+                                    }
+                                }
+                            }
+                            mainCatTotalPercent += subItem.valuePercent;
+                            mainCatTotalUSD += subItem.valueUSD;
+
+                            const subValueDisplay = document.getElementById(`${sliderId}-value`);
+                            if (subValueDisplay) {
+                                if (allocationMode === 'percentage') {
+                                    subValueDisplay.textContent = `${subItem.valuePercent.toFixed(1)}%`;
+                                } else {
+                                    subValueDisplay.textContent = formatCurrency(subItem.valueUSD);
+                                }
+                            }
+                        });
+                    }
+
+                    mainItem.valuePercent = mainCatTotalPercent;
+                    mainItem.valueUSD = mainCatTotalUSD;
+
+                    const mainValueDisplay = document.getElementById(`main-${mainItem.id}-value`);
+                    if (mainValueDisplay) {
+                         if (allocationMode === 'percentage') {
+                            mainValueDisplay.innerHTML = `${mainItem.valuePercent.toFixed(1)}% <span class='text-xs opacity-70'>(${formatCurrency(mainItem.valueUSD)})</span>`;
+                        } else {
+                            mainValueDisplay.innerHTML = `${formatCurrency(mainItem.valueUSD)} <span class='text-xs opacity-70'>(${mainItem.valuePercent.toFixed(1)}%)</span>`;
+                        }
+                    }
+                    overallTotalPercent += mainItem.valuePercent;
+                    overallTotalUSD += mainItem.valueUSD;
+                });
+            
+                if (allocationMode === 'percentage') {
+                    totalDisplay.textContent = `TOTAL: ${overallTotalPercent.toFixed(1)}% / 100%`;
+                    generateAnalysisButton.disabled = !(overallTotalPercent >= 95 && overallTotalPercent <= 105);
+                    if (overallTotalPercent > 100.05) {
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-red-100'; 
+                    } else if (Math.abs(overallTotalPercent - 100) < 0.05) {
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-green-100';
+                    } else {
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-blue-100';
+                    }
+                } else { 
+                    totalDisplay.textContent = `TOTAL: ${formatCurrency(overallTotalUSD)} / ${formatCurrency(TOTAL_FEDERAL_BUDGET_USD)}`;
+                    const fivePercentOfTotalBudget = TOTAL_FEDERAL_BUDGET_USD * 0.05;
+                    generateAnalysisButton.disabled = !(overallTotalUSD >= TOTAL_FEDERAL_BUDGET_USD - fivePercentOfTotalBudget && overallTotalUSD <= TOTAL_FEDERAL_BUDGET_USD + fivePercentOfTotalBudget);
+                     if (overallTotalUSD > TOTAL_FEDERAL_BUDGET_USD + (TOTAL_FEDERAL_BUDGET_USD * 0.0005) ) { 
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-red-100';
+                    } else if (Math.abs(overallTotalUSD - TOTAL_FEDERAL_BUDGET_USD) < (TOTAL_FEDERAL_BUDGET_USD * 0.0005) ) { 
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-green-100';
+                    } else {
+                        totalDisplay.className = 'text-center mb-4 p-3 rounded-lg text-lg bg-blue-100';
+                    }
+                }
+                updateChart();
+            }
+
+            function updateChart() { 
+                if (!chart) return;
+                const activeBudgetData = budgetData.filter(item => item.valuePercent > 0);
+                chart.data.labels = activeBudgetData.map(item => item.name);
+                chart.data.datasets[0].data = activeBudgetData.map(item => item.valuePercent);
+                chart.data.datasets[0].backgroundColor = activeBudgetData.map(item => getComputedColor(item.color)); 
+                
+                chart.options.plugins.tooltip.callbacks.label = function(context) {
+                    let label = context.label || '';
+                    if (label) { label += ': '; }
+                    const currentMainItem = budgetData.find(d => d.name === context.label);
+                    if (currentMainItem) {
+                        label += `${currentMainItem.valuePercent.toFixed(1)}% (${formatCurrency(currentMainItem.valueUSD)})`;
+                    } else { 
+                         label += `${context.parsed.toFixed(1)}% (Data error)`;
+                    }
+                    return label;
+                };
+                chart.update();
+            }
+            
+            function logConsequence(subItem, changeType, parentItemName) { 
+                const logEntry = document.createElement('div');
+                logEntry.classList.add('p-2.5', 'rounded-none', 'flex', 'items-start', 'gap-2.5', 'transition-all', 'transform', 'scale-95', 'opacity-0', 'mb-1.5'); 
+                
+                let iconHtml = '';
+                let consequenceText = '';
+                let isDrasticCut = false; 
+                let displayName = `${parentItemName} (${subItem.name})`; 
+                
+                if (changeType === 'decrease') {
+                    logEntry.classList.add('bg-red-50'); 
+                    iconHtml = `<span class="text-red-500 text-lg font-bold mt-[-2px]">▼</span>`;
+                    consequenceText = `CUT ${displayName}: ${subItem.consequences.decrease}`;
+                    if (subItem.valuePercent < subItem.originalBaselinePercent * 0.5) { 
+                        isDrasticCut = true;
+                    }
+                    latestImpactDisplay.className = 'p-3 mb-4 rounded-lg decrease'; 
+                } else { 
+                    logEntry.classList.add('bg-yellow-50'); 
+                    iconHtml = `<span class="text-yellow-500 text-lg font-bold mt-[-2px]">▲</span>`; 
+                    consequenceText = `BOOST ${displayName}: ${subItem.consequences.increase}`;
+                    latestImpactDisplay.className = 'p-3 mb-4 rounded-lg increase'; 
+                }
+                
+                const uniqueIdPart = `${subItem.parentId}_${subItem.id}`; 
+                const explainButtonId = `explain-${uniqueIdPart}-${Date.now()}`;
+                // Using text for AI buttons for pixel feel
+                let buttonsHtml = `
+                    <button id="${explainButtonId}" title="Explain with AI" class="ai-button text-sky-500 p-0 text-xs">[💡]</button>
+                `;
+
+                let suggestAlternativesButtonId = '';
+                if (isDrasticCut) { 
+                    suggestAlternativesButtonId = `suggest-alt-${uniqueIdPart}-${Date.now()}`;
+                    buttonsHtml += `
+                        <button id="${suggestAlternativesButtonId}" title="Suggest Alternative Solutions" class="ai-button text-orange-500 ml-1 p-0 text-xs">[🧠]</button>
+                    `;
+                }
+                
+                const fullEntryHtml = `
+                    ${iconHtml} 
+                    <p class="text-xs flex-grow">${consequenceText.replace(/<strong>(.*?)<\/strong>/g, '<span class="font-bold">$1</span>')}</p>
+                    <div class="flex items-center flex-shrink-0">${buttonsHtml}</div>`;
+                
+                logEntry.innerHTML = fullEntryHtml;
+                latestImpactDisplay.innerHTML = `<p class="text-sm">${fullEntryHtml.replace(/text-xs/g, 'text-sm')}</p>`;
+
+                const firstChild = consequencesLog.firstChild;
+                if (firstChild && firstChild.nodeName === 'P' && firstChild.classList.contains('italic')) { 
+                    consequencesLog.innerHTML = '';
+                }
+                consequencesLog.prepend(logEntry);
+                consequencesLog.scrollTop = 0; 
+                
+                document.getElementById(explainButtonId).addEventListener('click', () => handleExplainConsequence(consequenceText));
+                if (isDrasticCut && suggestAlternativesButtonId) {
+                    document.getElementById(suggestAlternativesButtonId).addEventListener('click', () => handleSuggestAlternatives(subItem.name, parentItemName, consequenceText));
+                }
+
+                setTimeout(() => {
+                    logEntry.classList.remove('scale-95', 'opacity-0');
+                    logEntry.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function initChart() {
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                
+                Chart.defaults.font.family = "'VT323', monospace"; 
+                Chart.defaults.color = getComputedColor('var(--text-secondary)'); 
+                Chart.defaults.borderColor = getComputedColor('var(--card-border)');
+
+                chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { 
+                        labels: budgetData.map(item => item.name),
+                        datasets: [{
+                            data: budgetData.map(item => item.valuePercent), 
+                            backgroundColor: budgetData.map(item => getComputedColor(item.color)), 
+                            borderColor: getComputedColor('var(--card-bg)'), 
+                            borderWidth: 2, // Pixel border
+                            hoverBorderColor: getComputedColor('var(--text-primary)'),
+                            hoverBorderWidth: 3,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    padding: 15, 
+                                    color: getComputedColor('var(--text-primary)'), 
+                                    font: { size: 14, family: "'VT323', monospace" } // Larger pixel font
+                                }
+                            },
+                            tooltip: { 
+                                enabled: true,
+                                backgroundColor: getComputedColor('var(--text-primary)'),
+                                titleColor: getComputedColor('var(--accent-yellow)'),
+                                titleFont: { family: "'Press Start 2P', cursive", size: 12},
+                                bodyColor: getComputedColor('var(--text-on-dark-bg)'),
+                                bodyFont: { family: "'VT323', monospace", size: 14 },
+                                padding: 10,
+                                cornerRadius: 0, 
+                                borderColor: getComputedColor('var(--accent-yellow)'),
+                                borderWidth: 2,
+                                displayColors: true, // Keep colors in tooltip
+                                boxPadding: 6,
+                                callbacks: { 
+                                    label: (c) => `${c.label || ''}: ${c.parsed || 0}%` 
+                                }
+                            } 
+                        },
+                        cutout: '55%', 
+                    }
+                });
+            }
+
+            function handleSliderInteraction(event) {
+                const sliderId = event.target.id; 
+                const parentId = event.target.dataset.parentId;
+                const subId = event.target.dataset.subId;
+
+                const mainItem = budgetData.find(d => d.id === parentId);
+                const subItem = mainItem ? mainItem.subcategories.find(s => s.id === subId) : null;
+                if (!subItem || !mainItem) return;
+
+                const targetCategorySection = document.getElementById(`main-category-section-${mainItem.id}`);
+                 if (targetCategorySection) { 
+                    if (!slidersAndCategoriesContainer.contains(latestImpactDisplay) || slidersAndCategoriesContainer.firstChild !== latestImpactDisplay) {
+                        slidersAndCategoriesContainer.prepend(latestImpactDisplay);
+                    }
+                }
+
+                const newValueRaw = parseFloat(event.target.value); 
+                const previousBaselineValueForSlider = currentSliderBaselines[sliderId]; 
+
+                let currentComparisonValuePercentOfTotal; 
+                let previousComparisonValuePercentOfTotal;
+
+                if (allocationMode === 'percentage') {
+                    currentComparisonValuePercentOfTotal = newValueRaw; 
+                    previousComparisonValuePercentOfTotal = previousBaselineValueForSlider;
+                } else { 
+                    currentComparisonValuePercentOfTotal = (newValueRaw / TOTAL_FEDERAL_BUDGET_USD) * 100; 
+                    previousComparisonValuePercentOfTotal = (previousBaselineValueForSlider / TOTAL_FEDERAL_BUDGET_USD) * 100;
+                }
+                
+                if (Math.abs(currentComparisonValuePercentOfTotal - previousComparisonValuePercentOfTotal) >= SUB_CATEGORY_CONSEQUENCE_THRESHOLD_PERCENT_OF_TOTAL) {
+                    if (currentComparisonValuePercentOfTotal < previousComparisonValuePercentOfTotal) {
+                        logConsequence(subItem, 'decrease', mainItem.name);
+                    } else if (currentComparisonValuePercentOfTotal > previousComparisonValuePercentOfTotal) {
+                        logConsequence(subItem, 'increase', mainItem.name);
+                    }
+                }
+                currentSliderBaselines[sliderId] = newValueRaw; 
+                updateAll(sliderId); 
+            }
+            
+            function resetApp() {
+                allocationMode = 'percentage'; 
+                document.getElementById('mode-percentage').checked = true;
+                document.getElementById('mode-dollars').checked = false;
+                updateToggleLabels();
+
+                budgetData = processInitialData(initialBudgetDataRaw); 
+                createSliders(); 
+                updateAll(); 
+
+                consequencesLog.innerHTML = `<p class="text-stone-500 italic">Wiggle them sliders to see the town gossip...</p>`;
+                latestImpactDisplay.innerHTML = `<p class="italic text-stone-500">Latest news from the valley...</p>`;
+                latestImpactDisplay.className = 'p-3 mb-4 rounded-lg';
+                
+                if (slidersAndCategoriesContainer.firstChild !== latestImpactDisplay) {
+                     slidersAndCategoriesContainer.prepend(latestImpactDisplay);
+                }
+                generateAnalysisButton.disabled = true;
+                aiAdviceGoalInput.value = '';
+            }
+
+            function addEventListenersToSlidersAndButtons() {
+                 document.querySelectorAll('input[type="range"]').forEach(slider => {
+                    slider.addEventListener('input', (event) => updateAll(event.target.id)); 
+                    slider.addEventListener('change', handleSliderInteraction); 
+                 });
+                 document.querySelectorAll('.info-icon').forEach(icon => {
+                    icon.addEventListener('mouseover', showTooltip);
+                    icon.addEventListener('mouseout', hideTooltip);
+                    icon.addEventListener('mousemove', moveTooltip);
+                 });
+            }
+
+            function showTooltip(event) {
+                const text = event.target.dataset.tooltipText;
+                if (!text) return;
+                hoverTooltip.innerHTML = text;
+                hoverTooltip.classList.remove('hidden');
+                if (hoverTooltip.parentNode !== document.body) {
+                    document.body.appendChild(hoverTooltip);
+                }
+                moveTooltip(event); 
+            }
+
+            function hideTooltip() {
+                hoverTooltip.classList.add('hidden');
+            }
+
+            function moveTooltip(event) {
+                if (!hoverTooltip.classList.contains('hidden')) {
+                    let x = event.clientX + 10; 
+                    let y = event.clientY + 10 + window.scrollY; 
+
+                    const tooltipRect = hoverTooltip.getBoundingClientRect(); 
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight; 
+
+                    if (event.clientX + 10 + tooltipRect.width > viewportWidth) {
+                        x = event.clientX - tooltipRect.width - 10;
+                    }
+                    if (event.clientY + 10 + tooltipRect.height > viewportHeight) {
+                         y = event.clientY - tooltipRect.height - 10 + window.scrollY;
+                    }
+                    if (x < 0) x = 5;
+                    if (y < window.scrollY) y = window.scrollY + 5;
+
+                    hoverTooltip.style.left = `${x}px`;
+                    hoverTooltip.style.top = `${y}px`;
+                }
+            }
+            
+            function updateToggleLabels() {
+                document.querySelectorAll('#allocation-mode-toggle label').forEach(label => {
+                    if (label.getAttribute('for') === `mode-${allocationMode}`) {
+                        label.classList.add('active');
+                    } else {
+                        label.classList.remove('active');
+                    }
+                });
+            }
+
+            allocationModeToggle.addEventListener('change', (event) => {
+                allocationMode = event.target.value;
+                updateToggleLabels();
+                createSliders(); 
+                updateAll(); 
+            });
+
+            async function callGeminiAPI(prompt) {
+                aiModalTitle.textContent = "Message from the AI Mayor";
+                aiModalContent.innerHTML = '<div class="loader"></div> <p class="text-center text-stone-600 blink">Mayor AI is thinkin_...</p>';
+                aiResponseModal.classList.remove('hidden');
+                
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error (${response.status}): ${errorData.error?.message || 'The crystal ball is cloudy...'}`);
+                    }
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        let htmlContent = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-accent-orange">$1</strong>'); 
+                        htmlContent = htmlContent.split('\n\n').map(p => `<p class="mb-3">${p.replace(/\n/g, '<br>')}</p>`).join('');
+                        aiModalContent.innerHTML = htmlContent;
+                    } else {
+                        aiModalContent.innerHTML = '<p class="text-danger-text">Dagnabbit! The AI Mayor got tongue-tied. Try again?</p>';
+                        console.error("Unexpected API response structure:", result);
+                    }
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    aiModalContent.innerHTML = `<p class="text-danger-text">Whoops! ${error.message}. The Mayor_s gone fishin_. Try later.</p>`;
+                }
+            }
+            
+            function getBudgetStringForAI() {
+                let summary = [];
+                const overallTotalPercent = budgetData.reduce((sum, item) => sum + item.valuePercent, 0);
+                const overallTotalUSD = budgetData.reduce((sum, item) => sum + item.valueUSD, 0);
+
+                summary.push(`Current Town Budget: Total ${overallTotalPercent.toFixed(1)}% (${formatCurrency(overallTotalUSD)} out of ${formatCurrency(TOTAL_FEDERAL_BUDGET_USD)} target).\n`);
+
+                budgetData.forEach(mainItem => {
+                    summary.push(`Department: ${mainItem.name} (Total: ${mainItem.valuePercent.toFixed(1)}% / ${formatCurrency(mainItem.valueUSD)}):`);
+                    if (mainItem.subcategories) {
+                        mainItem.subcategories.forEach(sub => {
+                            summary.push(`  - Line Item: ${sub.name}: ${sub.valuePercent.toFixed(1)}% of total budget (${formatCurrency(sub.valueUSD)})`);
+                        });
+                    }
+                });
+                return summary.join('\n');
+            }
+
+            async function handleGenerateOverallAnalysis() {
+                aiModalTitle.textContent = 'AI Town Hall Meeting';
+                const budgetSummary = getBudgetStringForAI();
+                const prompt = `Mayor AI, please analyze this Pelican Town budget. What are the big impacts on town life, farming, and community? How do these choices affect each other? Focus on the main departments and any big changes in specific line items. Give your analysis in 3-4 friendly paragraphs, like you're speaking at a town meeting.\n\n${budgetSummary}`;
+                await callGeminiAPI(prompt);
+            }
+
+            async function handleGetAIAdvice() {
+                const userGoal = aiAdviceGoalInput.value.trim();
+                if (!userGoal) {
+                    aiModalTitle.textContent = 'Hold Yer Horses!';
+                    aiModalContent.innerHTML = '<p class="text-warning-text">Tell Mayor AI yer main goal first, friend!</p>';
+                    aiResponseModal.classList.remove('hidden');
+                    return;
+                }
+                aiModalTitle.textContent = 'AI Mayor_s Advice';
+                const budgetSummary = getBudgetStringForAI();
+                const prompt = `Here's the current Pelican Town budget:\n${budgetSummary}\n\nMy main goal is: "${userGoal}".\nMayor AI, can you give some concise, actionable advice? Suggest specific line items I could adjust (by a bit o' percent or some gold) to help reach this goal. And point out any trade-offs with other town needs. Two or three friendly paragraphs, please.`;
+                await callGeminiAPI(prompt);
+            }
+
+            async function handleExplainConsequence(consequenceText) {
+                aiModalTitle.textContent = 'Mayor AI Explains...';
+                const prompt = `Mayor AI, could you explain this bit of town news in more detail? Give some examples of what it means for us villagers. Keep it to 1-2 friendly paragraphs.\nTown News: "${consequenceText}"`;
+                await callGeminiAPI(prompt);
+            }
+            
+            async function handleSuggestAlternatives(subCategoryName, parentCategoryName, consequenceText) {
+                aiModalTitle.textContent = 'Mayor AI_s Bright Ideas';
+                const budgetSummary = getBudgetStringForAI();
+                const prompt = `About the Pelican Town budget: the line item '${subCategoryName}' (in the '${parentCategoryName}' department) was changed a lot, causing this news: '${consequenceText}'.\n\nHere's the current budget:\n${budgetSummary}\n\nMayor AI, can you suggest 2-3 other ideas for the '${subCategoryName}' item or the whole '${parentCategoryName}' department? We want to lessen any bad effects or get similar results with less gold. Be creative! A friendly list, please.`;
+                await callGeminiAPI(prompt);
+            }
+
+            closeModalButton.addEventListener('click', () => {
+                introModal.style.opacity = '0';
+                introModal.style.pointerEvents = 'none';
+                setTimeout(() => { introModal.style.display = 'none'; }, 300);
+            });
+
+            resetButton.addEventListener('click', resetApp);
+            generateAnalysisButton.addEventListener('click', handleGenerateOverallAnalysis);
+            getAIAdviceButton.addEventListener('click', handleGetAIAdvice);
+            closeAIResponseModalButton.addEventListener('click', () => {
+                aiResponseModal.classList.add('hidden');
+            });
+            
+            updateToggleLabels();
+            createSliders(); 
+            initChart();
+            updateAll(); 
+
+            if (slidersAndCategoriesContainer.firstChild) {
+                slidersAndCategoriesContainer.prepend(latestImpactDisplay);
+            } else { 
+                slidersAndCategoriesContainer.appendChild(latestImpactDisplay);
+            }
+            generateAnalysisButton.disabled = true; 
+        });
+    </script>
+</body>
+</html>
